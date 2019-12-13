@@ -7,6 +7,8 @@ const router = express.Router();
 
 
 // --------------------------------- GET ------------------------------- //
+
+// retrieving list of projects
 router.get('/', (req, res) => {
     Projects.getProjects()
     .then(projects => {
@@ -24,7 +26,7 @@ router.get('/', (req, res) => {
     })
 });
 
-
+// retrieving list of resources
 router.get('/resources', (req, res) => {
     Projects.getResources()
     .then(resources => {
@@ -35,7 +37,7 @@ router.get('/resources', (req, res) => {
     })
 });
 
-
+// retrieving list of tasks
 router.get('/tasks', (req, res) => {
     Projects.getTasks()
     .then(tasks => {
@@ -53,7 +55,7 @@ router.get('/tasks', (req, res) => {
     })
 });
 
-
+// retrieving tasks for specific project
 router.get('/:id/tasks', validateProjectId, (req, res) => {
     const id = req.params.id;
 
@@ -76,6 +78,8 @@ router.get('/:id/tasks', validateProjectId, (req, res) => {
 
 
 // ------------------------------- POST ------------------------------ //
+
+// adding projects
 router.post('/', validate, (req, res) => {
     const projectData = req.body;
 
@@ -94,6 +98,7 @@ router.post('/', validate, (req, res) => {
 });
 
 
+// adding resources
 router.post('/resources', validate, (req, res) => {
     const resourceData = req.body;
 
@@ -106,7 +111,7 @@ router.post('/resources', validate, (req, res) => {
     })
 });
 
-
+// adding tasks to specific project
 router.post('/:id/tasks', validateProjectId, validateTask, (req, res) => {
     const id = req.params.id;
     req.body.project_id = id;
@@ -128,9 +133,8 @@ router.post('/:id/tasks', validateProjectId, validateTask, (req, res) => {
 
 
 
-
-
 // ----------------------- CUSTOM MIDDLEWARE ------------------------ //
+
 function validate(req, res, next) {
     const data = req.body;
     if (!data) {
