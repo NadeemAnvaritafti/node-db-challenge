@@ -5,6 +5,8 @@ const Projects = require('./projects-model');
 const router = express.Router();
 
 
+
+// --------------------------------- GET ------------------------------- //
 router.get('/', (req, res) => {
     Projects.getProjects()
     .then(projects => {
@@ -52,7 +54,9 @@ router.get('/tasks', (req, res) => {
 });
 
 
-router.post('/', validateProject, (req, res) => {
+
+// ------------------------------- POST ------------------------------ //
+router.post('/', validate, (req, res) => {
     const projectData = req.body;
 
     Projects.addProject(projectData)
@@ -70,20 +74,80 @@ router.post('/', validateProject, (req, res) => {
 });
 
 
+router.post('/resources', validate, (req, res) => {
+    const resourceData = req.body;
+
+    Projects.addResource(resourceData)
+    .then(resource => {
+        res.status(201).json(resource);
+    })
+    .catch(error => {
+        res.status(500).json({ errorMessage: 'Failed to add resource' })
+    })
+});
+
+
+router.post('/:id/tasks', validateProjectId, validateTask, (req, res) => {
+    const id = req.params.id;
+    req.body.project_id = id;
+    const taskData = req.body;
+
+    Projects.addTask(taskData)
+    .then(task => {
+        if (task.completed === 0) {
+            task.completed = false;
+        } else if (task.completed === 1) {
+            task.completed = true;
+        }
+        res.status(201).json(task);
+    })
+    .catch(error => {
+        res.status(500).json({ errorMessage: 'Failed to add task' })
+    })
+})
+
+
+
 
 
 // ----------------------- CUSTOM MIDDLEWARE ------------------------ //
-function validateProject(req, res, next) {
-    const projectData = req.body;
-    if (!projectData) {
-        res.status(400).json({ error: 'missing project data' })
-    } else if (!projectData.name) {
-        res.status(400).json({ error: 'missing required project name' })
+function validate(req, res, next) {
+    const data = req.body;
+    if (!data) {
+        res.status(400).json({ error: 'missing data' })
+    } else if (!data.name) {
+        res.status(400).json({ error: 'missing required name' })
     } else {
         next();
     }
 }
 
+function validateTask(req, res, next) {
+    const data = req.body;
+    if (!data) {
+        res.status(400).json({ error: 'missing data' })
+    } else if (!data.description) {
+        res.status(400).json({ error: 'missing required description' })
+    } else {
+        next();
+    }
+}
 
+function validateProjectId(req, res, next) {
+  const id = req.params.id;
+    Projects.getProjectById(id) 
+    .then(project => {
+        if (project) {
+            req.project = project;
+            next();
+        } else {
+            res.status(404).json({ message: 'invalid project id' })
+        }
+    })
+    .catch(error => {
+          res.status(500).json({ error: 'The project information could not be retrieved.' })
+      })
+    
+}
 
 module.exports = router;
