@@ -54,6 +54,26 @@ router.get('/tasks', (req, res) => {
 });
 
 
+router.get('/:id/tasks', validateProjectId, (req, res) => {
+    const id = req.params.id;
+
+    Projects.getProjectTasks(id)
+    .then(tasks => {
+        for (let i=0; i<tasks.length; i++) {
+            if (tasks[i].completed === 0) {
+                tasks[i].completed = false;
+            } else if (tasks[i].completed === 1) {
+                tasks[i].completed = true;
+            }
+        }
+        res.status(200).json(tasks);
+    })
+    .catch(error => {
+        res.status(500).json({ errorMessage: 'Failed to get tasks' })
+    })
+});
+
+
 
 // ------------------------------- POST ------------------------------ //
 router.post('/', validate, (req, res) => {
